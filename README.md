@@ -14,6 +14,6 @@ $ make run
 
 ```
 
-If you don't have pipenv, install packages and evaluate `python3 run.py`.
+If you don't have pipenv, install packages and evaluate `python3 simulate.py`.
 
-If you want to change network configuration, you can do that in `run.py` file.
+If you want to change network configuration, you can do that in `simulate.py` file.
