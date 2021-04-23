@@ -5,13 +5,19 @@ class Device(object):
         self.env = env
         self.network = []
         self.dev_name = dev_name
-        self.action = self.env.process(self.main_loop())
+        self.env.process(self.transmit_ADV())
+        self.env.process(self.move_device())
 
-    def main_loop(self):
+    def transmit_ADV(self):
         while True:
             yield self.env.timeout(250)
-            print(self.dev_name + " I am sending ADV")
+            print(self.env.now, self.dev_name + " I am sending ADV")
             self.network.propagate_ADV(self)
+
+    def move_device(self):
+        while True:
+            yield self.env.timeout(150)
+            print(self.env.now, " I am moving")
 
     def receive_ADV(self):
         print(self.dev_name + " Cool, I got it")
