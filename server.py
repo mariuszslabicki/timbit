@@ -7,18 +7,14 @@ class Server(object):
         self.queueing_time = []
         self.processing_time = []
 
-    def receive_report(self):
-        print(self.env.now, "Server: I have received report")
-        self.env.process(self.process_message())
-        print(self.env.now, "Server: Done")
+    def receive_report(self, report):
+        print("Odebralem report")
+        print(report)
+        self.env.process(self.process_report(report))
 
-    def process_message(self):
-        print(self.env.now, "Server: waiting for queue")
+    def process_report(self, report):
         with self.q1.request() as process_report:
-            print(self.env.now, "Server: start queueing")
             queueing_start = self.env.now
             yield process_report
             self.queueing_time.append(self.env.now - queueing_start)
-            print(self.env.now, "Server: start processing")
             yield self.env.timeout(10)
-        print(self.env.now, "Server: finished processing")

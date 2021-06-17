@@ -20,17 +20,14 @@ class Network(object):
         self.server = srv
 
     def propagate_ADV(self, sender):
-        print("Network: I am propagating ADV")
         for device in self.devices:
             if device == sender:
                 continue
-            print("Distance is", math.hypot(sender.x - device.x, sender.y - device.y))
-            if math.hypot(sender.x - device.x, sender.y - device.y) > sender.communication_range:
-                continue
-            device.receive_ADV()
+            distance = math.hypot(sender.x - device.x, sender.y - device.y)
+            #Path loss from here: https://en.wikipedia.org/wiki/ITU_model_for_indoor_attenuation
+            path_loss = 20*math.log10(2400) + 30*math.log10(distance) - 28 + random.normalvariate(0, 5)
+            device.receive_ADV(sender, path_loss, distance)
 
-    def send_report_to_server(self):
-        print(self.env.now, "Network: delivering to server")
-        self.server.receive_report()
-        print(self.env.now, "Network: finished delivering to server")
+    def send_report_to_server(self, report):
+        self.server.receive_report(report)
         
