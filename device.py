@@ -2,8 +2,9 @@ import random
 import simpy
 
 class Device(object):
-    def __init__(self, env):
+    def __init__(self, env, id):
         self.env = env
+        self.id = id
         self.x = None
         self.y = None
         self.x_limit = None
@@ -41,16 +42,26 @@ class Device(object):
 
     def receive_ADV(self, sender, path_loss, distance):
         if sender.tx_power - path_loss > self.sensitivity:
-            if sender not in self.receided_ADV:
-                self.receided_ADV[sender] = [[sender.tx_power - path_loss], [distance]]
+            if sender.id not in self.receided_ADV:
+                self.receided_ADV[sender.id] = [[sender.tx_power - path_loss], [distance]]
             else:
-                self.receided_ADV[sender][0].append(sender.tx_power - path_loss)
-                self.receided_ADV[sender][1].append(distance)
+                self.receided_ADV[sender.id][0].append(sender.tx_power - path_loss)
+                self.receided_ADV[sender.id][1].append(distance)
         
 
     def perform_server_report(self):
-        # print("Wysylam report")
-        # print(self.receided_ADV)
-        self.network.send_report_to_server(self.receided_ADV)
-        self.receided_ADV = {}
-        yield self.env.timeout(5000)
+        delta = random.randint(0, 1000)
+        yield self.env.timeout(delta)
+        while True:
+            # print("Wysylam report")
+            # print(self.receided_ADV)
+            report = []
+            for key in self.receided_ADV:
+                report.append(key)
+                report.append(self.receided_ADV[key][0])
+                report.append(self.receided_ADV[key][1])
+
+            self.network.send_report_to_server(self.id, report)
+            self.receided_ADV = {}
+            delta = random.randint(0, 1000)
+            yield self.env.timeout(5000 + delta)

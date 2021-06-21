@@ -24,10 +24,12 @@ class Network(object):
             if device == sender:
                 continue
             distance = math.hypot(sender.x - device.x, sender.y - device.y)
+            if distance < 1:
+                distance = 1
             #Path loss from here: https://en.wikipedia.org/wiki/ITU_model_for_indoor_attenuation
             path_loss = 20*math.log10(2400) + 30*math.log10(distance) - 28 + random.normalvariate(0, 5)
             device.receive_ADV(sender, path_loss, distance)
 
-    def send_report_to_server(self, report):
-        self.server.receive_report(report)
+    def send_report_to_server(self, id, report):
+        self.server.receive_report(id, report)
         

@@ -7,8 +7,8 @@ class Server(object):
         self.queueing_time = []
         self.processing_time = []
 
-    def receive_report(self, report):
-        print("Odebralem report")
+    def receive_report(self, id, report):
+        print(self.env.now, "Received report from device", id)
         print(report)
         self.env.process(self.process_report(report))
 
