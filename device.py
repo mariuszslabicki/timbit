@@ -1,4 +1,5 @@
 import random
+import math
 import simpy
 
 class Device(object):
@@ -10,9 +11,9 @@ class Device(object):
         self.x_limit = None
         self.y_limit = None
         self.steps_to_WP = 0
-        self.tx_power = 0 #dBm
+        self.tx_power = 13 #dBm
         self.sensitivity = -95 #dBm
-        self.receided_ADV = {}
+        self.known_devices = {}
         self.env.process(self.transmit_ADV())
         self.env.process(self.keep_moving())
         self.env.process(self.perform_server_report())
@@ -21,7 +22,7 @@ class Device(object):
         while True:
             self.network.propagate_ADV(self)
             random_shift = random.randint(0, 10)
-            yield self.env.timeout(250 + random_shift)
+            yield self.env.timeout(100 + random_shift)
 
     def keep_moving(self):
         while True:
@@ -40,28 +41,28 @@ class Device(object):
         self.y += self.delta_y
         self.steps_to_WP -= 1
 
-    def receive_ADV(self, sender, path_loss, distance):
-        if sender.tx_power - path_loss > self.sensitivity:
-            if sender.id not in self.receided_ADV:
-                self.receided_ADV[sender.id] = [[sender.tx_power - path_loss], [distance]]
+    def receive_ADV(self, sender, RSSI, distance):
+        if RSSI > self.sensitivity:
+            calculated_dist = 0.0261 * math.pow(RSSI, 2) + 3.4324 * RSSI + 113.64
+            if sender.id not in self.known_devices:
+                self.known_devices[sender.id] = [calculated_dist, distance]
             else:
-                self.receided_ADV[sender.id][0].append(sender.tx_power - path_loss)
-                self.receided_ADV[sender.id][1].append(distance)
+                self.known_devices[sender.id][0] += 0.5 * (calculated_dist - self.known_devices[sender.id][0])
+                self.known_devices[sender.id][1] = distance
         
 
     def perform_server_report(self):
-        delta = random.randint(0, 1000)
+        delta = random.randint(0, 100)
         yield self.env.timeout(delta)
         while True:
-            # print("Wysylam report")
-            # print(self.receided_ADV)
             report = []
-            for key in self.receided_ADV:
+            for key in self.known_devices:
                 report.append(key)
-                report.append(self.receided_ADV[key][0])
-                report.append(self.receided_ADV[key][1])
+                report.append(self.known_devices[key][0])
+                report.append(self.known_devices[key][1])
 
-            self.network.send_report_to_server(self.id, report)
-            self.receided_ADV = {}
-            delta = random.randint(0, 1000)
-            yield self.env.timeout(5000 + delta)
+            report_creation_time = self.env.now
+            self.network.send_report_to_server(self.id, report, report_creation_time)
+            # self.receided_ADV = {}
+            delta = random.randint(0, 100)
+            yield self.env.timeout(1000 + delta)
