@@ -29,7 +29,7 @@ class Network(object):
             #Path loss from here: https://en.wikipedia.org/wiki/ITU_model_for_indoor_attenuation
             # path_loss = 20*math.log10(2400) + 30*math.log10(distance) - 28 + random.normalvariate(0, 5)
             # device.receive_ADV(sender, path_loss, distance)
-            RSSI = -9.427 * math.log(distance) - 62.874
+            RSSI = -9.427 * math.log(distance) - 62.874 + random.normalvariate(0, 5)
             device.receive_ADV(sender, RSSI, distance)
 
     def send_report_to_server(self, id, report, creationTime):
