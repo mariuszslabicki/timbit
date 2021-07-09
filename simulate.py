@@ -15,7 +15,7 @@ network = network.Network(env)
 srv = server.Server(env)
 network.add_server(srv)
 
-for i in range(100):
+for i in range(3):
     network.add_in_random_position(device.Device(env, i))
 
 # 1h        is 3600000  ms

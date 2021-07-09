@@ -52,17 +52,15 @@ class Device(object):
         
 
     def perform_server_report(self):
-        delta = random.randint(0, 100)
+        delta = random.randint(0, 1000)
         yield self.env.timeout(delta)
         while True:
             report = []
             for key in self.known_devices:
-                report.append(key)
-                report.append(self.known_devices[key][0])
-                report.append(self.known_devices[key][1])
+                dev_info = [key, self.known_devices[key][0], self.known_devices[key][1]]
+                report.append(dev_info)
 
             report_creation_time = self.env.now
             self.network.send_report_to_server(self.id, report, report_creation_time)
-            # self.receided_ADV = {}
-            delta = random.randint(0, 100)
+            delta = 0
             yield self.env.timeout(1000 + delta)
