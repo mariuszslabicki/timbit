@@ -45,11 +45,11 @@ class Device(object):
         if RSSI > self.sensitivity:
             calculated_dist = 0.0261 * math.pow(RSSI, 2) + 3.4324 * RSSI + 113.64
             if sender.id not in self.known_devices:
-                self.known_devices[sender.id] = [calculated_dist, distance]
+                self.known_devices[sender.id] = [True, calculated_dist, distance]
             else:
-                self.known_devices[sender.id][0] += 0.5 * (calculated_dist - self.known_devices[sender.id][0])
-                self.known_devices[sender.id][1] = distance
-        
+                self.known_devices[sender.id][0] = True
+                self.known_devices[sender.id][1] += 0.5 * (calculated_dist - self.known_devices[sender.id][1])
+                self.known_devices[sender.id][2] = distance
 
     def perform_server_report(self):
         delta = random.randint(0, 1000)
@@ -57,8 +57,10 @@ class Device(object):
         while True:
             report = []
             for key in self.known_devices:
-                dev_info = [key, self.known_devices[key][0], self.known_devices[key][1]]
-                report.append(dev_info)
+                if self.known_devices[key][0] is True:
+                    self.known_devices[key][0] = False
+                    dev_info = [key, self.known_devices[key][1], self.known_devices[key][2]]
+                    report.append(dev_info)
 
             report_creation_time = self.env.now
             self.network.send_report_to_server(self.id, report, report_creation_time)
