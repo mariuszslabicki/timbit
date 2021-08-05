@@ -15,7 +15,7 @@ class Server(object):
         print(self.env.now, "Received report from device", id)
         if len(report) > 0:
             for entry in report:
-                print("Dev:", entry[0], "\t measuredD:", entry[1], "\t lastRealD:", entry[2])
+                print("Dev:", entry[0], "\t measuredD:", entry[1], "\t lastRealD:", entry[2], "\t lastRealX:", entry[3], "\t lastRealY:", entry[4])
         else:
             print("Received empty report")
         self.env.process(self.process_report(report, creationTime))
