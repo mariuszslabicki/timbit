@@ -9,13 +9,13 @@ class Server(object):
         self.queueing_time = []
         self.processing_time = []
 
-    def receive_report(self, id, report, creationTime):
+    def receive_report(self, nodeType, id, report, creationTime):
         end = time.perf_counter()
         print("RealTime", end - self.start)
-        print(self.env.now, "Received report from device", id)
+        print(self.env.now, "Received report from device", nodeType, id)
         if len(report) > 0:
             for entry in report:
-                print("Dev:", entry[0], "\t measuredD:", entry[1], "\t lastRealD:", entry[2], "\t lastRealX:", entry[3], "\t lastRealY:", entry[4])
+                print("Type", entry[0], "Dev:", entry[1], "\t measuredD:", entry[2], "\t lastRealD:", entry[3], "\t lastRealX:", entry[4], "\t lastRealY:", entry[5])
         else:
             print("Received empty report")
         self.env.process(self.process_report(report, creationTime))

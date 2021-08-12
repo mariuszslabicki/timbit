@@ -1,9 +1,8 @@
-import device
 import server
 import network
 import simpy
 
-realTime = False
+realTime = True
 
 if realTime is False:
     env = simpy.Environment()
@@ -15,8 +14,11 @@ network = network.Network(env)
 srv = server.Server(env)
 network.add_server(srv)
 
-for i in range(3):
-    network.add_in_random_position(device.Device(env, i))
+for i in range(5):
+    network.add_mobile_node(i)
+
+for i in range(1):
+    network.add_static_node(i)
 
 # 1h        is 3600000  ms
 # 10min     is 600000   ms
