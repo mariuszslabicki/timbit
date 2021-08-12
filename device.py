@@ -74,7 +74,7 @@ class Device(object):
             for key in self.known_dynamic_nodes:
                 if self.known_dynamic_nodes[key][0] is True:
                     self.known_dynamic_nodes[key][0] = False
-                    dev_info = ["D", key, self.known_dynamic_nodes[key][1], self.known_dynamic_nodes[key][2], self.known_dynamic_nodes[key][3], self.known_dynamic_nodes[key][4]]
+                    dev_info = ["M", key, self.known_dynamic_nodes[key][1], self.known_dynamic_nodes[key][2], self.known_dynamic_nodes[key][3], self.known_dynamic_nodes[key][4]]
                     report.append(dev_info)
             for key in self.known_static_nodes:
                 if self.known_static_nodes[key][0] is True:
@@ -84,7 +84,7 @@ class Device(object):
 
             report_creation_time = self.env.now
             if self.static is False:
-                type = "D"
+                type = "M"
             else:
                 type = "S"
             self.network.send_report_to_server(type, self.id, report, report_creation_time)
