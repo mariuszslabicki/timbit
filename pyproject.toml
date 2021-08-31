@@ -8,6 +8,7 @@ authors = ["Mariusz Slabicki"]
 python = "^3.9"
 simpy = "^4.0.1"
 pandas = "^1.3.2"
+matplotlib = "^3.4.3"
 
 [tool.poetry.dev-dependencies]
 
