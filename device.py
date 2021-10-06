@@ -30,16 +30,20 @@ class Device(object):
     def keep_moving(self):
         while True:
             if self.steps_to_WP == 0:
-                self.steps_to_WP = 5
+                staying_time = random.uniform(5000, 15000)
+                yield self.env.timeout(staying_time)
                 self.WP_x = random.randint(0, self.x_limit)
                 self.WP_y = random.randint(0, self.y_limit)
+                distance = math.hypot(self.x - self.WP_x, self.y - self.WP_y)
+                speed = 1.4
+                self.steps_to_WP = math.ceil(distance*10*(1/speed))
                 self.delta_x = (self.WP_x - self.x) / self.steps_to_WP
                 self.delta_y = (self.WP_y - self.y) / self.steps_to_WP
 
-            yield self.env.timeout(150)
-            self.make_a_move()
+            yield self.env.timeout(100)
+            self.make_a_step()
 
-    def make_a_move(self):
+    def make_a_step(self):
         self.x += self.delta_x
         self.y += self.delta_y
         self.steps_to_WP -= 1
