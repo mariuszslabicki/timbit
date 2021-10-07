@@ -2,10 +2,15 @@ import server
 import network
 import simpy
 import matplotlib.pyplot as plt
+import configparser
 
-realTime = False
+config = configparser.ConfigParser()
+config.read('config')
+conf = config['timbit']
 
-number_of_devices = [100, 200, 300]
+realTime = conf.getboolean('realtime')
+
+number_of_devices = [1]
 capacity = [1, 2, 3, 4, 5]
 for cap in capacity:
     for nod in number_of_devices:

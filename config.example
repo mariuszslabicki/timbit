@@ -1,0 +1,9 @@
+# Please keep in mind that time constants are provided in ms
+
+[timbit]
+realtime = False
+node_speed_min = 1.2
+node_speed_max = 1.6
+resting_time_min = 5000
+resting_time_max = 15000
+location_update_interval = 100
