@@ -14,6 +14,7 @@ $ make run
 
 ```
 
+To run the simulation you must have a proper config file. You can use an existing config.example, just copy it in the same directory as `config`
+
 If you don't have pipenv, install packages and evaluate `python3 simulate.py`.
 
-To run the simulation you must have a proped config file. You can use an existing config.example, just copy it in the same directory as `config`
