@@ -16,4 +16,4 @@ $ make run
 
 If you don't have pipenv, install packages and evaluate `python3 simulate.py`.
 
-If you want to change network configuration, you can do that in `simulate.py` file.
+To run the simulation you must have a proped config file. You can use an existing config.example, just copy it in the same directory as `config`

@@ -3,15 +3,16 @@ import random
 import math
 
 class Network(object):
-    def __init__(self, env, x_size=100, y_size=100):
+    def __init__(self, env, config):
         self.mobile_devices = []
         self.static_devices = []
         self.env = env
-        self.x_size = x_size
-        self.y_size = y_size
+        self.config = config
+        self.x_size = int(self.config["network_size_x"])
+        self.y_size = int(self.config["network_size_y"])
 
     def add_mobile_node(self, id):
-        dev = device.Device(self.env, id)
+        dev = device.Device(self.env, id, self.config)
         self.mobile_devices.append(dev)
         dev.network = self
         dev.x_limit = self.x_size
@@ -20,7 +21,7 @@ class Network(object):
         dev.y = random.randint(0, dev.y_limit)
 
     def add_static_node(self, id):
-        dev = device.Device(self.env, id, static=True)
+        dev = device.Device(self.env, id, self.config, static=True)
         self.static_devices.append(dev)
         dev.network = self
         dev.x_limit = self.x_size
@@ -38,9 +39,6 @@ class Network(object):
             distance = math.hypot(sender.x - device.x, sender.y - device.y)
             if distance < 1:
                 distance = 1
-            #Path loss from here: https://en.wikipedia.org/wiki/ITU_model_for_indoor_attenuation
-            # path_loss = 20*math.log10(2400) + 30*math.log10(distance) - 28 + random.normalvariate(0, 5)
-            # device.receive_ADV(sender, path_loss, distance)
             RSSI = -9.427 * math.log(distance) - 62.874 + random.normalvariate(0, 5)
             device.receive_ADV(sender, RSSI, distance)
         for device in self.static_devices:
@@ -49,9 +47,6 @@ class Network(object):
             distance = math.hypot(sender.x - device.x, sender.y - device.y)
             if distance < 1:
                 distance = 1
-            #Path loss from here: https://en.wikipedia.org/wiki/ITU_model_for_indoor_attenuation
-            # path_loss = 20*math.log10(2400) + 30*math.log10(distance) - 28 + random.normalvariate(0, 5)
-            # device.receive_ADV(sender, path_loss, distance)
             RSSI = -9.427 * math.log(distance) - 62.874 + random.normalvariate(0, 5)
             device.receive_ADV(sender, RSSI, distance)
 

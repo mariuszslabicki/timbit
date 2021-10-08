@@ -1,7 +1,14 @@
 # Please keep in mind that time constants are provided in ms
+# Note: simulation_time will be ignored if realtime_processing is set to True
 
 [timbit]
-realtime = False
+simulation_time = 300000
+network_size_x = 100
+network_size_y = 100
+number_of_mobile_dev = 1
+number_of_static_dev = 0
+server_processing_capacity = 1
+realtime_processing = False
 node_speed_min = 1.2
 node_speed_max = 1.6
 resting_time_min = 5000

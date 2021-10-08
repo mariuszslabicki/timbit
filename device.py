@@ -3,7 +3,7 @@ import math
 import simpy
 
 class Device(object):
-    def __init__(self, env, id, static=False):
+    def __init__(self, env, id, config, static=False):
         self.env = env
         self.id = id
         self.static = static
@@ -16,6 +16,7 @@ class Device(object):
         self.sensitivity = -95 #dBm
         self.known_static_nodes = {}
         self.known_dynamic_nodes = {}
+        self.conf = config
         self.env.process(self.transmit_ADV())
         self.env.process(self.perform_server_report())
         if self.static is False:
@@ -29,18 +30,20 @@ class Device(object):
 
     def keep_moving(self):
         while True:
+            location_update_interval = int(self.conf["location_update_interval"])
+            updates_in_s = 1000/location_update_interval
             if self.steps_to_WP == 0:
-                staying_time = random.uniform(5000, 15000)
+                staying_time = random.uniform(int(self.conf["resting_time_min"]), int(self.conf["resting_time_max"]))
                 yield self.env.timeout(staying_time)
                 self.WP_x = random.randint(0, self.x_limit)
                 self.WP_y = random.randint(0, self.y_limit)
                 distance = math.hypot(self.x - self.WP_x, self.y - self.WP_y)
-                speed = 1.4
-                self.steps_to_WP = math.ceil(distance*10*(1/speed))
+                speed = random.uniform(float(self.conf["node_speed_min"]), float(self.conf["node_speed_max"]))
+                self.steps_to_WP = math.ceil(distance*updates_in_s*(1/speed))
                 self.delta_x = (self.WP_x - self.x) / self.steps_to_WP
                 self.delta_y = (self.WP_y - self.y) / self.steps_to_WP
 
-            yield self.env.timeout(100)
+            yield self.env.timeout(location_update_interval)
             self.make_a_step()
 
     def make_a_step(self):
