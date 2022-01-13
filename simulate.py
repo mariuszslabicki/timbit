@@ -8,7 +8,7 @@ config = configparser.ConfigParser()
 config.read('config')
 conf = config['timbit']
 
-realTime = conf.getboolean('realtime')
+realTime = conf.getboolean('realtime_processing')
 
 if realTime is False:
     env = simpy.Environment()
