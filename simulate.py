@@ -15,7 +15,9 @@ if realTime is False:
 else:
     env = simpy.RealtimeEnvironment(initial_time=0, factor=0.001, strict=False)
 
-net = network.Network(env, conf)
+pathloss_model = conf.get('pathloss_model')
+
+net = network.Network(env, conf, pathloss_model)
 
 srv = server.Server(env, capacity=int(conf["server_processing_capacity"]))
 net.add_server(srv)
