@@ -8,6 +8,8 @@ class Network(object):
         self.static_devices = []
         self.env = env
         self.pathloss_model = pathloss_model
+        if self.pathloss_model == "matrix_based":
+            import pathloss_matrix
         self.config = config
         self.x_size = int(self.config["network_size_x"])
         self.y_size = int(self.config["network_size_y"])
