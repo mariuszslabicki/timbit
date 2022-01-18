@@ -30,3 +30,6 @@ if realTime is False:
     env.run(conf["simulation_time"])
 else:
     env.run()
+    
+# print("queueing_time", net.server.queueing_time)
+# print("processing_time", net.server.processing_time)

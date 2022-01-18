@@ -10,9 +10,10 @@ class Network(object):
         self.config = config
         self.x_size = int(self.config["network_size_x"])
         self.y_size = int(self.config["network_size_y"])
+        self.mes_dimension = int(self.config["number_of_mobile_dev"]) + int(self.config["number_of_static_dev"])
 
     def add_mobile_node(self, id):
-        dev = device.Device(self.env, id, self.config)
+        dev = device.Device(self.env, id, self.config, self.mes_dimension)
         self.mobile_devices.append(dev)
         dev.network = self
         dev.x_limit = self.x_size
@@ -21,7 +22,7 @@ class Network(object):
         dev.y = random.randint(0, dev.y_limit)
 
     def add_static_node(self, id):
-        dev = device.Device(self.env, id, self.config, static=True)
+        dev = device.Device(self.env, id, self.config, self.mes_dimension, static=True)
         self.static_devices.append(dev)
         dev.network = self
         dev.x_limit = self.x_size
@@ -50,6 +51,6 @@ class Network(object):
             RSSI = -9.427 * math.log(distance) - 62.874 + random.normalvariate(0, 5)
             device.receive_ADV(sender, RSSI, distance)
 
-    def send_report_to_server(self, nodeType, id, report, creationTime):
-        self.server.receive_report(nodeType, id, report, creationTime)
+    def send_report_to_server(self, nodeType, id, report, creationTime, measurements):
+        self.server.receive_report(nodeType, id, report, creationTime, measurements)
         
