@@ -41,7 +41,7 @@ class Device(object):
             # print(self.known_dynamic_nodes, end="\n\n\n")
             self.network.propagate_ADV(self)
             random_shift = random.randint(0, 10)
-            yield self.env.timeout(1000 + random_shift) #TODO: revert to 100!
+            yield self.env.timeout(100 + random_shift)
 
     def keep_moving(self):
         while True:
