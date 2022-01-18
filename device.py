@@ -18,6 +18,7 @@ class Device(object):
         self.known_dynamic_nodes = {}
         self.conf = config
         self.max_age_of_measurement = int(self.conf["max_age_of_measurement"])
+        self.packet_loss_probability = float(self.conf["packet_loss_probability"])
         # self.mes = [{[None for x in range(mes_dimension)]} for y in range(mes_dimension)] 
         self.mes = {}
         self.env.process(self.transmit_ADV())
@@ -67,7 +68,7 @@ class Device(object):
         self.steps_to_WP -= 1
 
     def receive_ADV(self, sender, RSSI, distance):
-        if RSSI > self.sensitivity:
+        if RSSI > self.sensitivity and random.uniform(0,1) > self.packet_loss_probability:
             calculated_dist = 0.0261 * math.pow(RSSI, 2) + 3.4324 * RSSI + 113.64
             id_typed = str(sender.id)+'U'
             if sender.static is False:

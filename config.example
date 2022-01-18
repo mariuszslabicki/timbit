@@ -16,3 +16,4 @@ resting_time_min = 5000
 resting_time_max = 15000
 location_update_interval = 100
 max_age_of_measurement = 4000
+packet_loss_probability = 0.2
