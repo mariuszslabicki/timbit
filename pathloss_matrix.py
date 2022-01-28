@@ -24,6 +24,9 @@ class PathlossCalculator(object):
         x_end = math.ceil(x_b)
         y_end = math.ceil(y_b)
         distance = math.hypot(x_begin - x_end, y_begin - y_end)
+        if distance == 0:
+            visited_fields = []
+            return visited_fields
         x_shift = (x_end - x_begin) / distance
         y_shift = (y_end - y_begin) / distance
 
