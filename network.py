@@ -13,7 +13,7 @@ class Network(object):
         self.pathloss_model = pathloss_model
         if self.pathloss_model == "matrix_based":
             import pathloss_matrix
-            self.obstacle_calc = pathloss_matrix.PathlossCalculator(self.x_size+1, self.y_size+1)
+            self.obstacle_calc = pathloss_matrix.PathlossCalculator(self.x_size+2, self.y_size+2)
 
     def add_mobile_node(self, id):
         dev = device.Device(self.env, id, self.config)
