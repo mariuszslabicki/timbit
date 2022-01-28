@@ -44,7 +44,7 @@ class Network(object):
             if distance < 1:
                 distance = 1
             if self.pathloss_model == "rssi_based":
-                RSSI = -9.427 * math.log(distance) - 62.874 + random.normalvariate(0, 5)
+                RSSI = -9.427 * math.log(distance) - 62.874 + random.normalvariate(0, 25)
             device.receive_ADV(sender, RSSI, distance)
         for device in self.static_devices:
             if device == sender:

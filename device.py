@@ -17,6 +17,10 @@ class Device(object):
         self.known_static_nodes = {}
         self.known_dynamic_nodes = {}
         self.conf = config
+        self.correct_distance_classification = 0
+        self.wrong_distance_classification = 0        
+        self.correct_distance_classification_improved = 0
+        self.wrong_distance_classification_improved = 0
         self.max_age_of_measurement = int(self.conf["max_age_of_measurement"])
         self.packet_loss_probability = float(self.conf["packet_loss_probability"])
         # self.mes = [{[None for x in range(mes_dimension)]} for y in range(mes_dimension)] 
@@ -68,48 +72,50 @@ class Device(object):
         self.steps_to_WP -= 1
 
     def receive_ADV(self, sender, RSSI, distance):
-        if RSSI > self.sensitivity and random.uniform(0,1) > self.packet_loss_probability:
+        if RSSI > self.sensitivity:
             calculated_dist = 0.0261 * math.pow(RSSI, 2) + 3.4324 * RSSI + 113.64
-            id_typed = str(sender.id)+'U'
-            if sender.static is False:
-                id_typed = str(sender.id)+'D'
-                if sender.id not in self.known_dynamic_nodes:
-                    self.known_dynamic_nodes[sender.id] = [True, calculated_dist, distance, sender.x, sender.y]
+            if random.uniform(0,1) > self.packet_loss_probability:
+                id_typed = str(sender.id)+'U'
+                if sender.static is False:
+                    id_typed = str(sender.id)+'D'
+                    if sender.id not in self.known_dynamic_nodes:
+                        self.known_dynamic_nodes[sender.id] = [True, calculated_dist, distance, sender.x, sender.y]
+                    else:
+                        self.known_dynamic_nodes[sender.id][0] = True
+                        self.known_dynamic_nodes[sender.id][1] += 0.5 * (calculated_dist - self.known_dynamic_nodes[sender.id][1])
+                        self.known_dynamic_nodes[sender.id][2] = distance
+                        self.known_dynamic_nodes[sender.id][3] = sender.x
+                        self.known_dynamic_nodes[sender.id][4] = sender.y
+                if sender.static is True:
+                    id_typed = str(sender.id)+'S'
+                    if sender.id not in self.known_static_nodes:
+                        self.known_static_nodes[sender.id] = [True, calculated_dist, distance, sender.x, sender.y]
+                    else:
+                        self.known_static_nodes[sender.id][0] = True
+                        self.known_static_nodes[sender.id][1] += 0.5 * (calculated_dist - self.known_static_nodes[sender.id][1])
+                        self.known_static_nodes[sender.id][2] = distance
+                        self.known_static_nodes[sender.id][3] = sender.x
+                        self.known_static_nodes[sender.id][4] = sender.y
+                if id_typed in self.mes[self.id_typed]:
+                    old_val = self.mes[self.id_typed][id_typed][0]
+                    self.mes[self.id_typed][id_typed] = [((0.5 * old_val) + calculated_dist) / 1.5, self.env.now]
                 else:
-                    self.known_dynamic_nodes[sender.id][0] = True
-                    self.known_dynamic_nodes[sender.id][1] += 0.5 * (calculated_dist - self.known_dynamic_nodes[sender.id][1])
-                    self.known_dynamic_nodes[sender.id][2] = distance
-                    self.known_dynamic_nodes[sender.id][3] = sender.x
-                    self.known_dynamic_nodes[sender.id][4] = sender.y
-            if sender.static is True:
-                id_typed = str(sender.id)+'S'
-                if sender.id not in self.known_static_nodes:
-                    self.known_static_nodes[sender.id] = [True, calculated_dist, distance, sender.x, sender.y]
-                else:
-                    self.known_static_nodes[sender.id][0] = True
-                    self.known_static_nodes[sender.id][1] += 0.5 * (calculated_dist - self.known_static_nodes[sender.id][1])
-                    self.known_static_nodes[sender.id][2] = distance
-                    self.known_static_nodes[sender.id][3] = sender.x
-                    self.known_static_nodes[sender.id][4] = sender.y
-            if id_typed in self.mes[self.id_typed]:
-                old_val = self.mes[self.id_typed][id_typed][0]
-                self.mes[self.id_typed][id_typed] = [((0.5 * old_val) + calculated_dist) / 1.5, self.env.now]
-            else:
-                self.mes[self.id_typed][id_typed] = [calculated_dist, self.env.now]
-            if id_typed not in self.mes:
-                self.mes[id_typed] = {}
-            for neighbour_id in sender.known_static_nodes.keys():
-                if str(neighbour_id)+'S' in self.mes[id_typed]:
-                    old_val = self.mes[id_typed][str(neighbour_id)+'S'][0]
-                    self.mes[id_typed][str(neighbour_id)+'S']=[((0.5 * old_val) + sender.known_static_nodes[neighbour_id][2]) / 1.5, self.env.now]
-                else:
-                    self.mes[id_typed][str(neighbour_id)+'S']=[sender.known_static_nodes[neighbour_id][2], self.env.now]
-            for neighbour_id in sender.known_dynamic_nodes.keys():
-                if str(neighbour_id)+'D' in self.mes[id_typed]:
-                    old_val = self.mes[id_typed][str(neighbour_id)+'D'][0]
-                    self.mes[id_typed][str(neighbour_id)+'D']=[((0.5 * old_val) + sender.known_dynamic_nodes[neighbour_id][2]) / 1.5, self.env.now]
-                else:
-                    self.mes[id_typed][str(neighbour_id)+'D']=[sender.known_dynamic_nodes[neighbour_id][2], self.env.now]
+                    self.mes[self.id_typed][id_typed] = [calculated_dist, self.env.now]
+                if id_typed not in self.mes:
+                    self.mes[id_typed] = {}
+                for neighbour_id in sender.known_static_nodes.keys():
+                    if str(neighbour_id)+'S' in self.mes[id_typed]:
+                        old_val = self.mes[id_typed][str(neighbour_id)+'S'][0]
+                        self.mes[id_typed][str(neighbour_id)+'S']=[((0.5 * old_val) + sender.known_static_nodes[neighbour_id][2]) / 1.5, self.env.now]
+                    else:
+                        self.mes[id_typed][str(neighbour_id)+'S']=[sender.known_static_nodes[neighbour_id][2], self.env.now]
+                for neighbour_id in sender.known_dynamic_nodes.keys():
+                    if str(neighbour_id)+'D' in self.mes[id_typed]:
+                        old_val = self.mes[id_typed][str(neighbour_id)+'D'][0]
+                        self.mes[id_typed][str(neighbour_id)+'D']=[((0.5 * old_val) + sender.known_dynamic_nodes[neighbour_id][2]) / 1.5, self.env.now]
+                    else:
+                        self.mes[id_typed][str(neighbour_id)+'D']=[sender.known_dynamic_nodes[neighbour_id][2], self.env.now]
+                self.make_distance_classification(sender, calculated_dist)
 
     def perform_server_report(self):
         delta = random.randint(0, 1000)
@@ -143,3 +149,28 @@ class Device(object):
             self.network.send_report_to_server(type, self.id, report, report_creation_time, self.mes)
             delta = 0
             yield self.env.timeout(1000 + delta)
+            
+    def make_distance_classification(self, sender, calculated_dist):
+        real_dist = math.sqrt( (sender.x-self.x)**2 + (sender.y-self.y)**2 )
+        # print("me:", self.x, self.y, "sender:", sender.x, sender.y, "real distance:", real_dist, "calculated distance:", calculated_dist)
+        if (real_dist < 5 and calculated_dist < 5) or (real_dist >= 5 and calculated_dist >= 5):
+            self.correct_distance_classification += 1
+        else:
+            self.wrong_distance_classification += 1
+        
+        sender_id_typed = str(sender.id)+'U'
+        if sender.static is False:
+            sender_id_typed = str(sender.id)+'D'
+        else:
+            sender_id_typed = str(sender.id)+'S'
+        
+        calculated_dist_improved = self.mes[self.id_typed][sender_id_typed][0]
+        if sender_id_typed in self.mes:
+            if self.id_typed in self.mes[sender_id_typed]:
+                calculated_dist_improved += self.mes[sender_id_typed][self.id_typed][0]
+                calculated_dist_improved /= 2.0
+                
+        if (real_dist < 5 and calculated_dist_improved < 5) or (real_dist >= 5 and calculated_dist_improved >= 5):
+            self.correct_distance_classification_improved += 1
+        else:
+            self.wrong_distance_classification_improved += 1

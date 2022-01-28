@@ -13,16 +13,16 @@ class Server(object):
     def receive_report(self, nodeType, id, report, creationTime, measurements):
         # end = time.perf_counter()
         # print("RealTime", end - self.start)
-        print(self.env.now, "Received report from device", str(id)+nodeType)
+        # print(self.env.now, "Received report from device", str(id)+nodeType)
         # if len(report) > 0:
         #     for entry in report:
         #         print("Type", entry[0], "Dev:", entry[1], "\t measuredD:", round(entry[2],3), "\t lastRealD:", round(entry[3],3), "\t lastRealX:", round(entry[4],3), "\t lastRealY:", round(entry[5],3))
         # else:
         #     print("Received empty report")
-        for from_, targets_ in measurements.items():
-            print("From "+from_, end=" to ")
-            print(targets_)
-        print()
+        # for from_, targets_ in measurements.items():
+        #     print("From "+from_, end=" to ")
+        #     print(targets_)
+        # print()
         self.env.process(self.process_report(report, creationTime))
 
     def process_report(self, report, creationTime):
