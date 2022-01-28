@@ -10,14 +10,11 @@ class Network(object):
         self.config = config
         self.x_size = int(self.config["network_size_x"])
         self.y_size = int(self.config["network_size_y"])
-<<<<<<< HEAD
         self.mes_dimension = int(self.config["number_of_mobile_dev"]) + int(self.config["number_of_static_dev"])
-=======
         self.pathloss_model = pathloss_model
         if self.pathloss_model == "matrix_based":
             import pathloss_matrix
             self.obstacle_calc = pathloss_matrix.PathlossCalculator(self.x_size+1, self.y_size+1)
->>>>>>> main
 
     def add_mobile_node(self, id):
         dev = device.Device(self.env, id, self.config, self.mes_dimension)
