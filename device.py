@@ -31,10 +31,12 @@ class Device(object):
             self.env.process(self.keep_moving())
             self.id_typed = str(self.id)+'D'
             self.mes[self.id_typed] = {}
+            self.WP_x = None
+            self.WP_y = None
         else:
             self.id_typed = str(self.id)+'S'
             self.mes[self.id_typed] = {}
-
+            
 
     def transmit_ADV(self):
         while True:
@@ -55,8 +57,11 @@ class Device(object):
             if self.steps_to_WP == 0:
                 staying_time = random.uniform(int(self.conf["resting_time_min"]), int(self.conf["resting_time_max"]))
                 yield self.env.timeout(staying_time)
-                self.WP_x = random.randint(0, self.x_limit)
-                self.WP_y = random.randint(0, self.y_limit)
+                last_x = self.WP_x
+                last_y = self.WP_y
+                while last_x == self.WP_x and last_y == self.WP_y:
+                    self.WP_x = random.randint(0, self.x_limit)
+                    self.WP_y = random.randint(0, self.y_limit)
                 distance = math.hypot(self.x - self.WP_x, self.y - self.WP_y)
                 speed = random.uniform(float(self.conf["node_speed_min"]), float(self.conf["node_speed_max"]))
                 self.steps_to_WP = math.ceil(distance*updates_in_s*(1/speed))

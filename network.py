@@ -7,13 +7,17 @@ class Network(object):
         self.mobile_devices = []
         self.static_devices = []
         self.env = env
-        self.pathloss_model = pathloss_model
-        if self.pathloss_model == "matrix_based":
-            import pathloss_matrix
         self.config = config
         self.x_size = int(self.config["network_size_x"])
         self.y_size = int(self.config["network_size_y"])
+<<<<<<< HEAD
         self.mes_dimension = int(self.config["number_of_mobile_dev"]) + int(self.config["number_of_static_dev"])
+=======
+        self.pathloss_model = pathloss_model
+        if self.pathloss_model == "matrix_based":
+            import pathloss_matrix
+            self.obstacle_calc = pathloss_matrix.PathlossCalculator(self.x_size+1, self.y_size+1)
+>>>>>>> main
 
     def add_mobile_node(self, id):
         dev = device.Device(self.env, id, self.config, self.mes_dimension)
@@ -45,6 +49,10 @@ class Network(object):
                 distance = 1
             if self.pathloss_model == "rssi_based":
                 RSSI = -9.427 * math.log(distance) - 62.874 + random.normalvariate(0, 25)
+            if self.pathloss_model == "matrix_based":
+                pure_loss = -9.427 * math.log(distance) - 62.874 + random.normalvariate(0, 5)
+                obstacle_loss = self.obstacle_calc.return_obstacle_pathloss(math.floor(sender.x), math.floor(sender.y), math.floor(device.x), math.floor(device.y))
+                RSSI = pure_loss - obstacle_loss
             device.receive_ADV(sender, RSSI, distance)
         for device in self.static_devices:
             if device == sender:
@@ -54,6 +62,10 @@ class Network(object):
                 distance = 1
             if self.pathloss_model == "rssi_based":
                 RSSI = -9.427 * math.log(distance) - 62.874 + random.normalvariate(0, 5)
+            if self.pathloss_model == "matrix_based":
+                pure_loss = -9.427 * math.log(distance) - 62.874 + random.normalvariate(0, 5)
+                obstacle_loss = self.obstacle_calc.return_obstacle_pathloss(math.floor(sender.x), math.floor(sender.y), math.floor(device.x), math.floor(device.y))
+                RSSI = pure_loss - obstacle_loss
             device.receive_ADV(sender, RSSI, distance)
 
     def send_report_to_server(self, nodeType, id, report, creationTime, measurements):
