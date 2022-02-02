@@ -14,7 +14,7 @@ class Network(object):
         self.pathloss_model = pathloss_model
         if self.pathloss_model == "matrix_based":
             import pathloss_matrix
-            self.obstacle_calc = pathloss_matrix.PathlossCalculator(self.x_size+1, self.y_size+1)
+            self.obstacle_calc = pathloss_matrix.PathlossCalculator(self.x_size+2, self.y_size+2)
 
     def add_mobile_node(self, id):
         dev = device.Device(self.env, id, self.config, self.mes_dimension)
@@ -45,7 +45,7 @@ class Network(object):
             if distance < 1:
                 distance = 1
             if self.pathloss_model == "rssi_based":
-                RSSI = -9.427 * math.log(distance) - 62.874 + random.normalvariate(0, 25)
+                RSSI = -9.427 * math.log(distance) - 62.874 + random.normalvariate(0, 5)
             if self.pathloss_model == "matrix_based":
                 pure_loss = -9.427 * math.log(distance) - 62.874 + random.normalvariate(0, 5)
                 obstacle_loss = self.obstacle_calc.return_obstacle_pathloss(math.floor(sender.x), math.floor(sender.y), math.floor(device.x), math.floor(device.y))

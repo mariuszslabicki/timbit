@@ -60,5 +60,29 @@ print ("Improved: ")
 print ("Correct classification:", correct_distance_classification_sum, "Wrong classificaton:", wrong_distance_classification_sum)
 print ("Correct %:",  correct_distance_classification_sum /  (correct_distance_classification_sum + wrong_distance_classification_sum) * 100.0)
 
+
+correct_distance_classification_sum = 0
+wrong_distance_classification_sum = 0
+correct_distance_classification_neighbour_sum = 0
+wrong_distance_classification_neighbour_sum = 0
+for dev in net.mobile_devices:
+    correct_distance_classification_sum += dev.correct_distance_classification_improved
+    wrong_distance_classification_sum += dev.wrong_distance_classification_improved
+    correct_distance_classification_neighbour_sum += dev.correct_distance_classification_neighbour
+    wrong_distance_classification_neighbour_sum += dev.wrong_distance_classification_neighbour
+for dev in net.static_devices:
+    correct_distance_classification_sum += dev.correct_distance_classification_improved
+    wrong_distance_classification_sum += dev.wrong_distance_classification_improved
+    correct_distance_classification_neighbour_sum += dev.correct_distance_classification_neighbour
+    wrong_distance_classification_neighbour_sum += dev.wrong_distance_classification_neighbour
+
+
+print ("Improved + neighbour detection: ")
+print ("Correct classification:", correct_distance_classification_sum, "Wrong classificaton:", wrong_distance_classification_sum)
+print ("Correct classification neighbour:", correct_distance_classification_neighbour_sum, "Wrong classificaton neighbour:", wrong_distance_classification_neighbour_sum)
+
+print ("Correct %:",  (correct_distance_classification_sum + correct_distance_classification_neighbour_sum) /  (correct_distance_classification_sum + wrong_distance_classification_sum + correct_distance_classification_neighbour_sum + wrong_distance_classification_neighbour_sum) * 100.0)
+
+
 # print("queueing_time", net.server.queueing_time)
 # print("processing_time", net.server.processing_time)
