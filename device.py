@@ -69,8 +69,9 @@ class Device(object):
                 distance = math.hypot(self.x - self.WP_x, self.y - self.WP_y)
                 speed = random.uniform(float(self.conf["node_speed_min"]), float(self.conf["node_speed_max"]))
                 self.steps_to_WP = math.ceil(distance*updates_in_s*(1/speed))
-                self.delta_x = (self.WP_x - self.x) / self.steps_to_WP
-                self.delta_y = (self.WP_y - self.y) / self.steps_to_WP
+                if self.steps_to_WP != 0:
+                    self.delta_x = (self.WP_x - self.x) / self.steps_to_WP
+                    self.delta_y = (self.WP_y - self.y) / self.steps_to_WP
 
             yield self.env.timeout(location_update_interval)
             self.make_a_step()
@@ -150,41 +151,34 @@ class Device(object):
             if sender.static is True:
                 sender_id_typed = str(sender.id)+'S'
 
-            # print("\n", self.id_typed, " - nie odebrane od", sender_id_typed, RSSI, calculated_dist)
+            my_neighbours = []
+            if self.id_typed in self.mes:
+                for key in self.mes[self.id_typed]:
+                    if key != sender_id_typed:
+                        my_neighbours.append(key)
             for key1, val1 in self.mes.items():
-                if self.id_typed in val1:
-                    if self.mes[key1][self.id_typed][0] < 5.0:
-                        for key2, val2 in self.mes.items():
-                            if key1 in val2:
-                                if self.mes[key1][self.id_typed][0] + self.mes[key2][key1][0] < 5.0:
-                                    ids = [self.id_typed, key2]
-                                    ids.sort()
-                                    if ids[0] in self.mes:
-                                        if ids[1] in self.mes[ids[0]]:
-                                            print("\n", "Jestem:", self.id_typed, ", utracilem od:", sender_id_typed, ", obliczony dystans od RSSI: ", calculated_dist)
-                                            print("do sasiada:", key1, "jest:", self.mes[key1][self.id_typed][0], "a od niego do", key2, "jest", self.mes[key2][key1][0])
-                                            self.make_distance_classification(sender, self.mes[key1][self.id_typed][0] + self.mes[key2][key1][0], True)
-                                
-
-
-                    
-                
-        #     for key, val in self.mes[self.id_typed].items():
-        #         if val[0] < 5.0 and key is not sender_id_typed:
-        #             if key in self.mes:
-        #                 if sender_id_typed in self.mes[key]:
-        #                     if val[0] + self.mes[key][sender_id_typed][0] < 5.0:
-        #                         # print("sasiad sasiada! ", key )
-        #                         # print("\n", "Jestem:", self.id_typed, ", utracilem od:", sender_id_typed, ", obliczony dystans od RSSI: ", calculated_dist)
-        #                         # print("do sasiada:", key, "jest:", val[0], "a od niego do", sender_id_typed, "jest", self.mes[key][sender_id_typed][0])
-        #                         self.make_distance_classification(sender, val[0] + self.mes[key][sender_id_typed][0], True)
-        #         # print(key, val)
-        # self.calculate_distance_in_triangle()
+                if self.id_typed in val1 and key1 not in my_neighbours:
+                    if key1 != sender_id_typed:
+                        my_neighbours.append(key1)
+            
+            for mn in my_neighbours:
+                ids = [self.id_typed, mn]
+                ids.sort()
+                if self.mes[ids[0]][ids[1]][0] < 5.0:
+                    idsn = [mn, sender_id_typed]
+                    if idsn[0] in self.mes:
+                        if idsn[1] in self.mes[idsn[0]]:
+                            if self.mes[ids[0]][ids[1]][0] + self.mes[idsn[0]][idsn[1]][0] < 5.0:
+                                # print("\n", "Jestem:", self.id_typed, ", utracilem od:", sender_id_typed, ", obliczony dystans od RSSI: ", calculated_dist)
+                                # print("do sasiada:", mn, "jest:", self.mes[ids[0]][ids[1]][0], "(", ids[0], ids[1] ,")", "a od niego do", sender_id_typed, "jest", self.mes[idsn[0]][idsn[1]][0], "(", idsn[0], idsn[1] ,")",)
+                                self.make_distance_classification(sender, self.mes[ids[0]][ids[1]][0] + self.mes[idsn[0]][idsn[1]][0], True)
+        self.calculate_distance_in_triangle()
 
     def perform_server_report(self):
         delta = random.randint(0, 1000)
         yield self.env.timeout(delta)
         while True:
+            # remove old mesh nodes - begin
             for tdevs in self.mes.values():
                 to_delete = []
                 for tdev, values in tdevs.items():
@@ -193,6 +187,7 @@ class Device(object):
                 for tdev in to_delete:
                     del tdevs[tdev]
                 del to_delete
+            # remove old mesh nodes - end
             report = []
             for key in self.known_dynamic_nodes:
                 if self.known_dynamic_nodes[key][0] is True:
