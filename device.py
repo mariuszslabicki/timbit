@@ -25,6 +25,12 @@ class Device(object):
         self.wrong_distance_classification_improved = 0
         self.correct_distance_classification_neighbour = 0
         self.wrong_distance_classification_neighbour = 0
+        
+        self.correct_distance_classification_before_triangle = 0
+        self.wrong_distance_classification_before_triangle = 0
+        self.correct_distance_classification_after_triangle = 0
+        self.wrong_distance_classification_after_triangle = 0
+        
         self.max_age_of_measurement = int(self.conf["max_age_of_measurement"])
         self.packet_loss_probability = float(
             self.conf["packet_loss_probability"])
@@ -173,7 +179,21 @@ class Device(object):
                                 # print("\n", "Jestem:", self.id_typed, ", utracilem od:", sender_id_typed, ", obliczony dystans od RSSI: ", calculated_dist)
                                 # print("do sasiada:", mn, "jest:", self.mes[ids[0]][ids[1]][0], "(", ids[0], ids[1] ,")", "a od niego do", sender_id_typed, "jest", self.mes[idsn[0]][idsn[1]][0], "(", idsn[0], idsn[1] ,")",)
                                 self.make_distance_classification(sender, self.mes[ids[0]][ids[1]][0] + self.mes[idsn[0]][idsn[1]][0], True)
-        self.calculate_distance_in_triangle()
+        
+        sender_id_typed = str(sender.id)+'U'
+        if sender.static is False:
+            sender_id_typed = str(sender.id)+'D'
+        if sender.static is True:
+            sender_id_typed = str(sender.id)+'S'
+        
+        ids = [self.id_typed, sender_id_typed]
+        ids.sort()
+        if ids[0] in self.mes:
+            if ids[1] in self.mes[ids[0]]:
+                self.make_distance_classification(sender, self.mes[ids[0]][ids[1]][0], triangle=True, tri_before = True)
+                self.calculate_distance_in_triangle()
+                self.make_distance_classification(sender, self.mes[ids[0]][ids[1]][0], triangle=True, tri_before = False)
+
 
     def perform_server_report(self):
         delta = random.randint(0, 1000)
@@ -213,7 +233,7 @@ class Device(object):
             delta = 0
             yield self.env.timeout(1000 + delta)
 
-    def make_distance_classification(self, sender, calculated_dist, neighbour=False):
+    def make_distance_classification(self, sender, calculated_dist, neighbour=False, triangle=False, tri_before = False):
         real_dist = round(math.sqrt((sender.x-self.x) **
                           2 + (sender.y-self.y)**2), 2)
         sender_id_typed = str(sender.id)+'U'
@@ -222,7 +242,7 @@ class Device(object):
         else:
             sender_id_typed = str(sender.id)+'S'
 
-        if neighbour is False:
+        if neighbour is False and triangle is False:
             if (real_dist < 5 and calculated_dist < 5.0) or (real_dist >= 5.0 and calculated_dist >= 5.0):
                 self.correct_distance_classification += 1
             else:
@@ -236,13 +256,27 @@ class Device(object):
                 self.correct_distance_classification_improved += 1
             else:
                 self.wrong_distance_classification_improved += 1
-        else:
+        if neighbour is True:
             if (real_dist < 5 and calculated_dist < 5.0) or (real_dist >= 5 and calculated_dist >= 5.0):
                 self.correct_distance_classification_neighbour += 1
             else:
                 # print(real_dist, calculated_dist)
                 self.wrong_distance_classification_neighbour += 1
-
+        if triangle is True:
+            if tri_before is True:
+                if (real_dist < 5 and calculated_dist < 5.0) or (real_dist >= 5 and calculated_dist >= 5.0):
+                    self.correct_distance_classification_before_triangle += 1
+                else:
+                    # print(real_dist, calculated_dist)
+                    self.wrong_distance_classification_before_triangle += 1
+            if tri_before is False:
+                if (real_dist < 5 and calculated_dist < 5.0) or (real_dist >= 5 and calculated_dist >= 5.0):
+                    self.correct_distance_classification_after_triangle += 1
+                else:
+                    # print(real_dist, calculated_dist)
+                    self.wrong_distance_classification_after_triangle += 1
+                
+    
     def calculate_distance_in_triangle(self):
         all_ids = []
         for key1, val1 in self.mes.items():
