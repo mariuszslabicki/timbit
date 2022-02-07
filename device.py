@@ -1,3 +1,4 @@
+from cgitb import small
 import random
 import math
 import simpy
@@ -243,25 +244,88 @@ class Device(object):
                 self.wrong_distance_classification_neighbour += 1
 
     def calculate_distance_in_triangle(self):
+        all_ids = []
+        for key1, val1 in self.mes.items():
+            if key1 not in all_ids:
+                all_ids.append(key1)
+            for key2 in val1:
+                if key2 not in all_ids:
+                    all_ids.append(key2)
+        all_ids.sort()
+        
         triangle_list = []
-        # print("++++++++++++++++++++++++++++++++++++++++++++\n", self.id_typed)
-        for first_id, first_dist in self.mes[self.id_typed].items():
-            # print("\t", first_id, "\t", first_dist)
-            if first_id in self.mes:
-                for sec_id, sec_dist in self.mes[first_id].items():
-                    if sec_id in self.mes:
-                        if self.id_typed in self.mes[sec_id]:
-                            distances = [first_dist[0], sec_dist[0],
-                                         self.mes[sec_id][self.id_typed][0]]
-                            distances.sort()
-                            if (distances[0] + distances[1] < distances[2]):
-                                triangle_list.append(self.id_typed + "---(" + str(round(first_dist[0], 2)) + ")--->" + first_id + "---(" + str(round(
-                                    sec_dist[0], 2)) + ")--->" + sec_id + "---(" + str(round(self.mes[sec_id][self.id_typed][0], 2)) + ")--->" + self.id_typed + " = ERROR")
-                            else:
-                                triangle_list.append(self.id_typed + "---(" + str(round(first_dist[0], 2)) + ")--->" + first_id + "---(" + str(round(
-                                    sec_dist[0], 2)) + ")--->" + sec_id + "---(" + str(round(self.mes[sec_id][self.id_typed][0], 2)) + ")--->" + self.id_typed)
+        for id1 in all_ids:
+            for id2 in all_ids:
+                if id2 != id1:
+                    ids1_2 = [id1, id2]
+                    ids1_2.sort()
+                    if ids1_2[0] in self.mes:
+                        if ids1_2[1] in self.mes[ids1_2[0]]:
+                            #pierwszy bok ids1_2
+                            for id3 in all_ids:
+                                if id3 != id2 and id3 != id1:
+                                    ids2_3 = [id2, id3]
+                                    ids2_3.sort()
+                                    if ids2_3[0] in self.mes:
+                                        if ids2_3[1] in self.mes[ids2_3[0]]:
+                                            #drugi bok ids2_3
+                                            ids3_1 = [id3, id1]
+                                            ids3_1.sort()
+                                            if ids3_1[0] in self.mes:
+                                                if ids3_1[1] in self.mes[ids3_1[0]]:
+                                                    #trzeci bok ids3_1
+                                                    # print(ids1_2, ids2_3, ids3_1)
+                                                    dist1_2 = self.mes[ids1_2[0]][ids1_2[1]][0]
+                                                    dist2_3 = self.mes[ids2_3[0]][ids2_3[1]][0]
+                                                    dist3_1 = self.mes[ids3_1[0]][ids3_1[1]][0]
+                                                    dists = [dist1_2, dist2_3, dist3_1]
+                                                    dists.sort()
+                                                    if dists[0] + dists[1] < dists[2]: #zle trojkaty
+                                                        ids = [ids1_2, ids2_3, ids3_1]
+                                                        ids.sort()
+                                                        if ids not in triangle_list:
+                                                            triangle_list.append( ids )
+                                                            # print(ids, round(dist1_2,2), round(dist2_3,2), round(dist3_1,2))
 
+                                                        #[dist1_2, dist2_3, dist3_1]
+        triangle_list.sort()
         if len(triangle_list) > 0:
+            out = {}
             for line in triangle_list:
-                print(line)
-        print("")
+                if str(line[0]) not in out:
+                    out[str(line[0])] = []
+                out[str(line[0])].append(line)
+            # print("++++++++++++++++++++")
+            
+            for key, val in out.items():
+                # print(key, ":")
+                # print(" ")
+                biggest = True
+                smallest = True
+                target_bval = 9999.0
+                target_mval = 0.0
+                for v in val:
+                    # print("\t", v)
+                    dist1_2 = self.mes[v[0][0]][v[0][1]][0]
+                    dist2_3 = self.mes[v[1][0]][v[1][1]][0]
+                    dist3_1 = self.mes[v[2][0]][v[2][1]][0]
+                    if dist1_2 > dist2_3 or dist1_2 > dist3_1:
+                        smallest = False
+                    else:
+                        if target_mval < abs(dist2_3 - dist3_1):
+                            target_mval = abs(dist2_3 - dist3_1)
+                    if dist1_2 < dist2_3 or dist1_2 < dist3_1:
+                        biggest = False
+                    else:
+                        if target_bval > dist2_3 + dist3_1:
+                            target_bval = dist2_3 + dist3_1
+                    # print(key, round(dist1_2,2), round(dist2_3,2), round(dist3_1,2))
+                if biggest:
+                    self.mes[val[0][0][0]][val[0][0][1]][0] = target_bval-0.01
+                    # print(key, "biggest", val[0][0][0], val[0][0][1], self.mes[val[0][0][0]][val[0][0][1]][0] )
+                if smallest:
+                    self.mes[val[0][0][0]][val[0][0][1]][0] = target_mval+0.01
+                    # print(key, "smallest", val[0][0][0], val[0][0][1], self.mes[val[0][0][0]][val[0][0][1]][0] )    
+                    
+            
+            
