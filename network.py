@@ -18,8 +18,9 @@ class Network(object):
             self.obstacle_calc = pathloss_matrix.PathlossCalculator(self.x_size+2, self.y_size+2)
 
     def add_mobile_node(self, id):
-        dev = device.Device(self.env, id, self.config, self.dictionary_devices)
+        dev = device.Device(self.env, id, self.config)
         self.mobile_devices.append(dev)
+        dev.network = self
         self.dictionary_devices[str(id)+'D'] = dev
         dev.x_limit = self.x_size
         dev.y_limit = self.y_size
@@ -27,8 +28,9 @@ class Network(object):
         dev.y = random.randint(0, dev.y_limit)
 
     def add_static_node(self, id):
-        dev = device.Device(self.env, id, self.config, self.dictionary_devices)
+        dev = device.Device(self.env, id, self.config)
         self.static_devices.append(dev)
+        dev.network = self
         self.dictionary_devices[str(id)+'S'] = dev
         dev.x_limit = self.x_size
         dev.y_limit = self.y_size

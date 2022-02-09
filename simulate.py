@@ -93,22 +93,24 @@ wrong_distance_classification_triangle_after_sum = 0
 for dev in net.mobile_devices:
     correct_distance_classification_triangle_before_sum += dev.correct_distance_classification_before_triangle
     wrong_distance_classification_triangle_before_sum += dev.wrong_distance_classification_before_triangle
-    # correct_distance_classification_triangle_after_sum += dev.correct_distance_classification_after_triangle
-    # wrong_distance_classification_triangle_after_sum += dev.wrong_distance_classification_after_triangle
+    correct_distance_classification_triangle_after_sum += dev.correct_distance_classification_after_triangle
+    wrong_distance_classification_triangle_after_sum += dev.wrong_distance_classification_after_triangle
    
 for dev in net.static_devices:
     correct_distance_classification_triangle_before_sum += dev.correct_distance_classification_before_triangle
     wrong_distance_classification_triangle_before_sum += dev.wrong_distance_classification_before_triangle
-    # correct_distance_classification_triangle_after_sum += dev.correct_distance_classification_after_triangle
-    # wrong_distance_classification_triangle_after_sum += dev.wrong_distance_classification_after_triangle
+    correct_distance_classification_triangle_after_sum += dev.correct_distance_classification_after_triangle
+    wrong_distance_classification_triangle_after_sum += dev.wrong_distance_classification_after_triangle
   
 
 print ("Triangle: ")
 print ("Correct classification before:", correct_distance_classification_triangle_before_sum, "Wrong classificaton before:", wrong_distance_classification_triangle_before_sum)
-# print ("Correct classification after:", correct_distance_classification_triangle_after_sum, "Wrong classificaton after:", wrong_distance_classification_triangle_after_sum)
+print ("Correct classification after:", correct_distance_classification_triangle_after_sum, "Wrong classificaton after:", wrong_distance_classification_triangle_after_sum)
 
-print ("Correct before %:",  correct_distance_classification_triangle_before_sum /  (correct_distance_classification_triangle_before_sum + wrong_distance_classification_triangle_before_sum) * 100.0)
-# print ("Correct after %:",  correct_distance_classification_triangle_after_sum /  (correct_distance_classification_triangle_after_sum + wrong_distance_classification_triangle_after_sum) * 100.0)
+if correct_distance_classification_triangle_before_sum + wrong_distance_classification_triangle_before_sum > 0:
+    print ("Correct before %:",  correct_distance_classification_triangle_before_sum /  (correct_distance_classification_triangle_before_sum + wrong_distance_classification_triangle_before_sum) * 100.0)
+if correct_distance_classification_triangle_after_sum + wrong_distance_classification_triangle_after_sum > 0:
+    print ("Correct after %:",  correct_distance_classification_triangle_after_sum /  (correct_distance_classification_triangle_after_sum + wrong_distance_classification_triangle_after_sum) * 100.0)
 
 
 

@@ -5,7 +5,7 @@ import simpy
 
 
 class Device(object):
-    def __init__(self, env, id, config, dict_dev, static=False):
+    def __init__(self, env, id, config, static=False):
         self.env = env
         self.id = id
         self.static = static
@@ -13,6 +13,7 @@ class Device(object):
         self.y = None
         self.x_limit = None
         self.y_limit = None
+        self.network = None
         self.steps_to_WP = 0
         self.tx_power = 13  # dBm
         self.sensitivity = -95  # dBm
@@ -30,13 +31,13 @@ class Device(object):
         self.wrong_distance_classification_before_triangle = 0
         self.correct_distance_classification_after_triangle = 0
         self.wrong_distance_classification_after_triangle = 0
-        self.dict_dev = dict_dev
+        # self.dict_dev = dict_dev
         self.max_age_of_measurement = int(self.conf["max_age_of_measurement"])
         self.packet_loss_probability = float(self.conf["packet_loss_probability"])
         # self.mes = [{[None for x in range(mes_dimension)]} for y in range(mes_dimension)]
         self.mes = {}
         self.env.process(self.transmit_ADV())
-        self.env.process(self.mesh_correction())
+        # self.env.process(self.mesh_correction())
         self.env.process(self.perform_server_report())
         if self.static is False:
             self.env.process(self.keep_moving())
@@ -124,9 +125,9 @@ class Device(object):
                 self.mes[ids[0]] = {}
             if ids[1] in self.mes[ids[0]]:
                 old_val = self.mes[ids[0]][ids[1]][0]
-                self.mes[ids[0]][ids[1]] = [((0.5 * old_val) + calculated_dist) / 1.5, self.env.now, sender]
+                self.mes[ids[0]][ids[1]] = [((0.5 * old_val) + calculated_dist) / 1.5, self.env.now]
             else:
-                self.mes[ids[0]][ids[1]] = [calculated_dist, self.env.now, sender]
+                self.mes[ids[0]][ids[1]] = [calculated_dist, self.env.now]
             # mesh - direct neighbour - eng
 
             # mesh - neighbours of neighbour - begin
@@ -137,9 +138,9 @@ class Device(object):
                     self.mes[ids[0]] = {}
                 if ids[1] in self.mes[ids[0]]:
                     old_val = self.mes[ids[0]][ids[1]][0]
-                    self.mes[ids[0]][ids[1]] = [((0.5 * old_val) + sender.known_static_nodes[neighbour_id][2]) / 1.5, self.env.now, sender]
+                    self.mes[ids[0]][ids[1]] = [((0.5 * old_val) + sender.known_static_nodes[neighbour_id][2]) / 1.5, self.env.now]
                 else:
-                    self.mes[ids[0]][ids[1]] = [sender.known_static_nodes[neighbour_id][2], self.env.now, sender]
+                    self.mes[ids[0]][ids[1]] = [sender.known_static_nodes[neighbour_id][2], self.env.now]
                     
             for neighbour_id in sender.known_dynamic_nodes.keys():
                 ids = [sender_id_typed, str(neighbour_id)+'D']
@@ -148,9 +149,9 @@ class Device(object):
                     self.mes[ids[0]] = {}
                 if ids[1] in self.mes[ids[0]]:
                     old_val = self.mes[ids[0]][ids[1]][0]
-                    self.mes[ids[0]][ids[1]] = [((0.5 * old_val) + sender.known_dynamic_nodes[neighbour_id][2]) / 1.5, self.env.now, sender]
+                    self.mes[ids[0]][ids[1]] = [((0.5 * old_val) + sender.known_dynamic_nodes[neighbour_id][2]) / 1.5, self.env.now]
                 else:
-                    self.mes[ids[0]][ids[1]] = [sender.known_dynamic_nodes[neighbour_id][2], self.env.now, sender]
+                    self.mes[ids[0]][ids[1]] = [sender.known_dynamic_nodes[neighbour_id][2], self.env.now]
             # mesh - neighbours of neighbour - end
 
             self.make_distance_classification(sender, calculated_dist)
@@ -257,12 +258,13 @@ class Device(object):
     
     def mesh_correction(self):
         while True: 
+            self.triangle_correction_eval(before=True)
             # self.triangle_correction()
-            self.triangle_correction_eval()
-            print(self.id_typed, self.env.now)
+            # self.triangle_correction_eval(after=True)
+            # print(self.id_typed, self.env.now)
             yield self.env.timeout(100)
     
-    def triangle_correction_eval(self):
+    def triangle_correction_eval(self, before=False, after=False):
         all_ids = []
         for key1, val1 in self.mes.items():
             if key1 not in all_ids:
@@ -279,12 +281,19 @@ class Device(object):
                 if ids1_2[0] in self.mes:
                     if ids1_2[1] in self.mes[ids1_2[0]]:
                         dist1_2 = self.mes[ids1_2[0]][ids1_2[1]][0]
-                        real_dist = math.hypot(self.x - self.dict_dev[id2].x, self.y - self.dict_dev[id2].y)
+                        real_dist = math.hypot(self.x - self.network.dictionary_devices[id2].x, self.y - self.network.dictionary_devices[id2].y)
                         # print(ids1_2, dist1_2, id2, real_dist)
                         if (real_dist < 5 and dist1_2 < 5.0) or (real_dist >= 5 and dist1_2 >= 5.0):
-                            self.correct_distance_classification_before_triangle += 1
+                            if before:
+                                self.correct_distance_classification_before_triangle += 1
+                            if after:
+                                self.correct_distance_classification_after_triangle += 1
                         else:
-                            self.wrong_distance_classification_before_triangle += 1
+                            if before:
+                                self.wrong_distance_classification_before_triangle += 1
+                            if after:
+                                self.wrong_distance_classification_after_triangle += 1
+
                         
                         
 
@@ -345,13 +354,13 @@ class Device(object):
                 out[str(line[0])].append(line)
             
             for key, val in out.items():
-                print(key, ":")
+                # print(key, ":")
                 biggest = True
                 smallest = True
                 target_bval = 9999.0
                 target_mval = 0.0
                 for v in val:
-                    print("\t", v)
+                    # print("\t", v)
                     dist1_2 = self.mes[v[0][0]][v[0][1]][0]
                     dist2_3 = self.mes[v[1][0]][v[1][1]][0]
                     dist3_1 = self.mes[v[2][0]][v[2][1]][0]
