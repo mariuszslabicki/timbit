@@ -31,23 +31,20 @@ class Device(object):
         self.wrong_distance_classification_before_triangle = 0
         self.correct_distance_classification_after_triangle = 0
         self.wrong_distance_classification_after_triangle = 0
-        # self.dict_dev = dict_dev
         self.max_age_of_measurement = int(self.conf["max_age_of_measurement"])
         self.packet_loss_probability = float(self.conf["packet_loss_probability"])
-        # self.mes = [{[None for x in range(mes_dimension)]} for y in range(mes_dimension)]
         self.mes = {}
         self.env.process(self.transmit_ADV())
-        # self.env.process(self.mesh_correction())
+        self.env.process(self.mesh_aging())
+        self.env.process(self.mesh_correction())
         self.env.process(self.perform_server_report())
         if self.static is False:
             self.env.process(self.keep_moving())
             self.id_typed = str(self.id)+'D'
-            # self.mes[self.id_typed] = {}
             self.WP_x = None
             self.WP_y = None
         else:
             self.id_typed = str(self.id)+'S'
-            # self.mes[self.id_typed] = {}
 
     def transmit_ADV(self):
         while True:
@@ -94,10 +91,11 @@ class Device(object):
 
     def receive_ADV(self, sender, RSSI, distance):
         calculated_dist = 0.0261 * math.pow(RSSI, 2) + 3.4324 * RSSI + 113.64
+        if sender.id_typed == self.id_typed:
+            return
+    
         if (RSSI > self.sensitivity) and (random.uniform(0, 1) > self.packet_loss_probability):
-            sender_id_typed = str(sender.id)+'U'
             if sender.static is False:
-                sender_id_typed = str(sender.id)+'D'
                 if sender.id not in self.known_dynamic_nodes:
                     self.known_dynamic_nodes[sender.id] = [
                         True, calculated_dist, distance, sender.x, sender.y]
@@ -108,7 +106,6 @@ class Device(object):
                     self.known_dynamic_nodes[sender.id][3] = sender.x
                     self.known_dynamic_nodes[sender.id][4] = sender.y
             if sender.static is True:
-                sender_id_typed = str(sender.id)+'S'
                 if sender.id not in self.known_static_nodes:
                     self.known_static_nodes[sender.id] = [True, calculated_dist, distance, sender.x, sender.y]
                 else:
@@ -119,7 +116,7 @@ class Device(object):
                     self.known_static_nodes[sender.id][4] = sender.y
 
             # mesh - direct neighbour - begin
-            ids = [sender_id_typed, self.id_typed]
+            ids = [sender.id_typed, self.id_typed]
             ids.sort()
             if ids[0] not in self.mes:
                 self.mes[ids[0]] = {}
@@ -132,7 +129,7 @@ class Device(object):
 
             # mesh - neighbours of neighbour - begin
             for neighbour_id in sender.known_static_nodes.keys():
-                ids = [sender_id_typed, str(neighbour_id)+'S']
+                ids = [sender.id_typed, str(neighbour_id)+'S']
                 ids.sort()
                 if ids[0] not in self.mes:
                     self.mes[ids[0]] = {}
@@ -143,7 +140,7 @@ class Device(object):
                     self.mes[ids[0]][ids[1]] = [sender.known_static_nodes[neighbour_id][2], self.env.now]
                     
             for neighbour_id in sender.known_dynamic_nodes.keys():
-                ids = [sender_id_typed, str(neighbour_id)+'D']
+                ids = [sender.id_typed, str(neighbour_id)+'D']
                 ids.sort()
                 if ids[0] not in self.mes:
                     self.mes[ids[0]] = {}
@@ -156,52 +153,52 @@ class Device(object):
 
             self.make_distance_classification(sender, calculated_dist)
         else:
-            
             #mesh - finding the lost neighbour - begin
-            sender_id_typed = str(sender.id)+'U'
-            if sender.static is False:
-                sender_id_typed = str(sender.id)+'D'
-            if sender.static is True:
-                sender_id_typed = str(sender.id)+'S'
-
             my_neighbours = []
             if self.id_typed in self.mes:
                 for key in self.mes[self.id_typed]:
-                    if key != sender_id_typed:
+                    if key != sender.id_typed and key != self.id_typed:
                         my_neighbours.append(key)
             for key1, val1 in self.mes.items():
                 if self.id_typed in val1 and key1 not in my_neighbours:
-                    if key1 != sender_id_typed:
+                    if key1 != sender.id_typed and key1 != self.id_typed:
                         my_neighbours.append(key1)
             
             for mn in my_neighbours:
                 ids = [self.id_typed, mn]
                 ids.sort()
-                if self.mes[ids[0]][ids[1]][0] < 5.0:
-                    idsn = [mn, sender_id_typed]
+                if self.mes[ids[0]][ids[1]][0] < 4.0:
+                    idsn = [mn, sender.id_typed]
                     if idsn[0] in self.mes:
                         if idsn[1] in self.mes[idsn[0]]:
-                            if self.mes[ids[0]][ids[1]][0] + self.mes[idsn[0]][idsn[1]][0] < 5.0:
-                                # print("\n", "Jestem:", self.id_typed, ", utracilem od:", sender_id_typed, ", obliczony dystans od RSSI: ", calculated_dist)
-                                # print("do sasiada:", mn, "jest:", self.mes[ids[0]][ids[1]][0], "(", ids[0], ids[1] ,")", "a od niego do", sender_id_typed, "jest", self.mes[idsn[0]][idsn[1]][0], "(", idsn[0], idsn[1] ,")",)
+                            if self.mes[ids[0]][ids[1]][0] + self.mes[idsn[0]][idsn[1]][0] < 4.0:
+                                # print("\n", "Jestem:", self.id_typed, ", utracilem od:", sender.id_typed, ", obliczony dystans od RSSI: ", calculated_dist)
+                                # print("do sasiada:", mn, "jest:", self.mes[ids[0]][ids[1]][0], "(", ids[0], ids[1] ,")", "a od niego do", sender.id_typed, "jest", self.mes[idsn[0]][idsn[1]][0], "(", idsn[0], idsn[1] ,")",)
                                 self.make_distance_classification(sender, self.mes[ids[0]][ids[1]][0] + self.mes[idsn[0]][idsn[1]][0], True)
             #mesh - finding the lost neighbour - end
+
+    def mesh_aging(self):
+        while True:
+            # remove old mesh nodes - begin
+            # print("+++",self.mes)
+            for tdevs in self.mes.values():
+                to_delete = []
+                for tdev, values in tdevs.items():
+                    if self.env.now - values[1] >= self.max_age_of_measurement:
+                        # print("=========", tdev, self.env.now, values[1], self.max_age_of_measurement)
+                        to_delete.append(tdev)
+                for tdev in to_delete:
+                    del tdevs[tdev]
+                del to_delete
+            # print("---", self.mes)
+            # remove old mesh nodes - end
+            yield self.env.timeout(self.max_age_of_measurement)
 
 
     def perform_server_report(self):
         delta = random.randint(0, 1000)
         yield self.env.timeout(delta)
         while True:
-            # remove old mesh nodes - begin
-            for tdevs in self.mes.values():
-                to_delete = []
-                for tdev, values in tdevs.items():
-                    if self.env.now - values[1] > self.max_age_of_measurement:
-                        to_delete.append(tdev)
-                for tdev in to_delete:
-                    del tdevs[tdev]
-                del to_delete
-            # remove old mesh nodes - end
             report = []
             for key in self.known_dynamic_nodes:
                 if self.known_dynamic_nodes[key][0] is True:
@@ -227,40 +224,34 @@ class Device(object):
             yield self.env.timeout(1000 + delta)
 
     def make_distance_classification(self, sender, calculated_dist, neighbour=False):
-        real_dist = round(math.sqrt((sender.x-self.x) **
-                          2 + (sender.y-self.y)**2), 2)
-        sender_id_typed = str(sender.id)+'U'
-        if sender.static is False:
-            sender_id_typed = str(sender.id)+'D'
-        else:
-            sender_id_typed = str(sender.id)+'S'
+        real_dist = math.hypot(self.x - sender.x, self.y - sender.y)
+        # print("self:", self.id_typed, "sender:", sender.id_typed, "real:", round(real_dist,3), "calc:", round(calculated_dist,3))
 
         if neighbour is False:
-            if (real_dist < 5 and calculated_dist < 5.0) or (real_dist >= 5.0 and calculated_dist >= 5.0):
+            if (real_dist < 5.0 and calculated_dist < 5.0) or (real_dist >= 5.0 and calculated_dist >= 5.0):
                 self.correct_distance_classification += 1
             else:
                 self.wrong_distance_classification += 1
 
-            ids = [self.id_typed, sender_id_typed]
+            ids = [self.id_typed, sender.id_typed]
             ids.sort()
             calculated_dist_improved = self.mes[ids[0]][ids[1]][0]
 
-            if (real_dist < 5 and calculated_dist_improved < 5.0) or (real_dist >= 5.0 and calculated_dist_improved >= 5.0):
+            if (real_dist < 5.0 and calculated_dist_improved < 5.0) or (real_dist >= 5.0 and calculated_dist_improved >= 5.0):
                 self.correct_distance_classification_improved += 1
             else:
                 self.wrong_distance_classification_improved += 1
         if neighbour is True:
-            if (real_dist < 5 and calculated_dist < 5.0) or (real_dist >= 5 and calculated_dist >= 5.0):
+            if (real_dist < 5.0 and calculated_dist < 5.0) or (real_dist >= 5.0 and calculated_dist >= 5.0):
                 self.correct_distance_classification_neighbour += 1
             else:
-                # print(real_dist, calculated_dist)
                 self.wrong_distance_classification_neighbour += 1
     
     def mesh_correction(self):
         while True: 
             self.triangle_correction_eval(before=True)
-            # self.triangle_correction()
-            # self.triangle_correction_eval(after=True)
+            self.triangle_correction()
+            self.triangle_correction_eval(after=True)
             # print(self.id_typed, self.env.now)
             yield self.env.timeout(100)
     
