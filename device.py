@@ -5,7 +5,7 @@ import simpy
 
 
 class Device(object):
-    def __init__(self, env, id, config, mes_dimension, static=False):
+    def __init__(self, env, id, config, static=False):
         self.env = env
         self.id = id
         self.static = static
@@ -32,9 +32,7 @@ class Device(object):
         self.correct_distance_classification_after_triangle = 0
         self.wrong_distance_classification_after_triangle = 0
         self.max_age_of_measurement = int(self.conf["max_age_of_measurement"])
-        self.packet_loss_probability = float(
-            self.conf["packet_loss_probability"])
-        # self.mes = [{[None for x in range(mes_dimension)]} for y in range(mes_dimension)]
+        self.packet_loss_probability = float(self.conf["packet_loss_probability"])
         self.mes = {}
         self.env.process(self.transmit_ADV())
         self.env.process(self.mesh_aging())
