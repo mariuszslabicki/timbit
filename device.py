@@ -358,13 +358,13 @@ class Device(object):
                     if dist1_2 > dist2_3 or dist1_2 > dist3_1:
                         smallest = False
                     else:
-                        if target_mval < abs(dist2_3 - dist3_1):
-                            target_mval = abs(dist2_3 - dist3_1)
+                        if target_mval > dist2_3 + dist3_1:
+                            target_mval = dist2_3 + dist3_1
                     if dist1_2 < dist2_3 or dist1_2 < dist3_1:
                         biggest = False
                     else:
-                        if target_bval > dist2_3 + dist3_1:
-                            target_bval = dist2_3 + dist3_1
+                        if target_bval < abs(dist2_3 - dist3_1) :
+                            target_bval  = abs( dist2_3 - dist3_1)
                     # print("\t", round(dist1_2,2),"\t\t", round(dist2_3,2),"\t\t", round(dist3_1,2))
                 if biggest:
                     self.mes[val[0][0][0]][val[0][0][1]][0] = target_bval-0.01
