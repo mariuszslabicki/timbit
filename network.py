@@ -14,6 +14,9 @@ class Network(object):
         if self.pathloss_model == "matrix_based":
             import pathloss_matrix
             self.obstacle_calc = pathloss_matrix.PathlossCalculator(self.x_size+2, self.y_size+2)
+        if self.pathloss_model == "fastel":
+            import pathloss_fastel
+            self.pathloss_calc = pathloss_fastel.PathlossCalculator()
 
     def add_mobile_node(self, id):
         dev = device.Device(self.env, id, self.config)
@@ -49,6 +52,9 @@ class Network(object):
                 pure_loss = -9.427 * math.log(distance) - 62.874 + random.normalvariate(0, 5)
                 obstacle_loss = self.obstacle_calc.return_obstacle_pathloss(math.floor(sender.x), math.floor(sender.y), math.floor(device.x), math.floor(device.y))
                 RSSI = pure_loss - obstacle_loss
+            if self.pathloss_model == "fastel":
+                path_loss = self.pathloss_calc.return_pathloss(sender.x, sender.y, device.x, device.y)
+                RSSI = path_loss
             device.receive_ADV(sender, RSSI, distance)
         for device in self.static_devices:
             if device == sender:
@@ -62,6 +68,9 @@ class Network(object):
                 pure_loss = -9.427 * math.log(distance) - 62.874 + random.normalvariate(0, 5)
                 obstacle_loss = self.obstacle_calc.return_obstacle_pathloss(math.floor(sender.x), math.floor(sender.y), math.floor(device.x), math.floor(device.y))
                 RSSI = pure_loss - obstacle_loss
+            if self.pathloss_model == "fastel":
+                path_loss = self.pathloss_calc.return_pathloss(sender.x, sender.y, device.x, device.y)
+                RSSI = path_loss
             device.receive_ADV(sender, RSSI, distance)
 
     def send_report_to_server(self, nodeType, id, report, creationTime):
