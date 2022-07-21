@@ -19,7 +19,9 @@ pathloss_model = conf.get('pathloss_model')
 
 net = network.Network(env, conf, pathloss_model)
 
-srv = server.Server(env, capacity=int(conf["server_processing_capacity"]))
+server_responses_on = conf.getboolean('server_responses_on')
+
+srv = server.Server(env, capacity=int(conf["server_processing_capacity"]), server_responses_on = server_responses_on)
 net.add_server(srv)
 
 for i in range(int(conf["number_of_mobile_dev"])):

@@ -38,6 +38,7 @@ class Network(object):
 
     def add_server(self, srv):
         self.server = srv
+        self.server.network = self
 
     def propagate_ADV(self, sender):
         for device in self.mobile_devices:
@@ -75,4 +76,10 @@ class Network(object):
 
     def send_report_to_server(self, nodeType, id, report, creationTime):
         self.server.receive_report(nodeType, id, report, creationTime)
+    
+    def send_response_to_device(self, nodeType, id):
+        if nodeType == "M":
+            self.mobile_devices[id].receive_response()
+        if nodeType == "S":
+            self.static_devices[id].receive_response()
         

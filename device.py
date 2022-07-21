@@ -82,6 +82,7 @@ class Device(object):
         delta = random.randint(0, 1000)
         yield self.env.timeout(delta)
         while True:
+            print(self.env.now, "Device sending report")
             report = []
             for key in self.known_dynamic_nodes:
                 if self.known_dynamic_nodes[key][0] is True:
@@ -102,3 +103,6 @@ class Device(object):
             self.network.send_report_to_server(type, self.id, report, report_creation_time)
             delta = 0
             yield self.env.timeout(1000 + delta)
+
+    def receive_response(self):
+        print(self.env.now, "Device received response")
