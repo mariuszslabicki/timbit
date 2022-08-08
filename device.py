@@ -104,5 +104,6 @@ class Device(object):
             delta = 0
             yield self.env.timeout(1000 + delta)
 
-    def receive_response(self):
-        print(self.env.now, "Device received response")
+    def receive_response(self, creationTime):
+        e2eprocessingtime = self.env.now - creationTime
+        print(self.env.now, "Device received response, e2e time was", e2eprocessingtime)

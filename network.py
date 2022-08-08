@@ -77,9 +77,9 @@ class Network(object):
     def send_report_to_server(self, nodeType, id, report, creationTime):
         self.server.receive_report(nodeType, id, report, creationTime)
     
-    def send_response_to_device(self, nodeType, id):
+    def send_response_to_device(self, nodeType, id, creationTime):
         if nodeType == "M":
-            self.mobile_devices[id].receive_response()
+            self.mobile_devices[id].receive_response(creationTime)
         if nodeType == "S":
-            self.static_devices[id].receive_response()
+            self.static_devices[id].receive_response(creationTime)
         

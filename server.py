@@ -23,9 +23,9 @@ class Server(object):
             # print("Received empty report")
         self.env.process(self.process_report(nodeType, id, report, creationTime))
     
-    def send_report(self, nodeType, id):
+    def send_report(self, nodeType, id, creationTime):
         print(self.env.now, "Server sending reponse now")
-        self.network.send_response_to_device(nodeType, id)
+        self.network.send_response_to_device(nodeType, id, creationTime)
 
     def process_report(self, nodeType, id, report, creationTime):
         with self.q1.request() as process_report:
@@ -35,4 +35,4 @@ class Server(object):
             self.queue_length[self.env.now] = len(self.q1.queue)
             yield self.env.timeout(10)
             if self.responses_on is True:
-                self.send_report(nodeType, id)
+                self.send_report(nodeType, id, creationTime)
