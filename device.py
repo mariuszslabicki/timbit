@@ -82,7 +82,7 @@ class Device(object):
         delta = random.randint(0, 1000)
         yield self.env.timeout(delta)
         while True:
-            print(self.env.now, "Device sending report")
+            # print(self.env.now, "Device sending report")
             report = []
             for key in self.known_dynamic_nodes:
                 if self.known_dynamic_nodes[key][0] is True:
@@ -106,4 +106,5 @@ class Device(object):
 
     def receive_response(self, creationTime):
         e2eprocessingtime = self.env.now - creationTime
-        print(self.env.now, "Device received response, e2e time was", e2eprocessingtime)
+        # print(self.env.now, "Device received response, e2e time was", e2eprocessingtime)
+        print(e2eprocessingtime)
