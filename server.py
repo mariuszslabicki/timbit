@@ -34,7 +34,7 @@ class Server(object):
             self.queueing_time.append(self.env.now - creationTime)
             # print("Time from report creation to processing was", self.env.now - creationTime)
             self.queue_length[self.env.now] = len(self.q1.queue)
-            timeout = 10 + 5 * (self.server_processing_capacity - 1)
+            timeout = 10 + 2 * (self.server_processing_capacity - 1)
             yield self.env.timeout(timeout)
             if self.responses_on is True:
                 self.send_report(nodeType, id, creationTime)
