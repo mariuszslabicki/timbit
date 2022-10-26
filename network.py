@@ -56,7 +56,7 @@ class Network(object):
             if self.pathloss_model == "fastel":
                 path_loss = self.pathloss_calc.return_pathloss(sender.x, sender.y, device.x, device.y)
                 RSSI = path_loss
-            device.receive_ADV(sender, RSSI, distance)
+            device.receive_ADV(sender, RSSI, distance, self.pathloss_model)
         for device in self.static_devices:
             if device == sender:
                 continue
@@ -72,7 +72,7 @@ class Network(object):
             if self.pathloss_model == "fastel":
                 path_loss = self.pathloss_calc.return_pathloss(sender.x, sender.y, device.x, device.y)
                 RSSI = path_loss
-            device.receive_ADV(sender, RSSI, distance)
+            device.receive_ADV(sender, RSSI, distance, self.pathloss_model)
 
     def send_report_to_server(self, nodeType, id, report, creationTime):
         self.server.receive_report(nodeType, id, report, creationTime)

@@ -56,9 +56,12 @@ class Device(object):
         self.y += self.delta_y
         self.steps_to_WP -= 1
 
-    def receive_ADV(self, sender, RSSI, distance):
+    def receive_ADV(self, sender, RSSI, distance, pathlossmodel):
         if RSSI > self.sensitivity:
-            calculated_dist = 0.0261 * math.pow(RSSI, 2) + 3.4324 * RSSI + 113.64
+            if pathlossmodel == "rssi_based":
+                calculated_dist = 0.0261 * math.pow(RSSI, 2) + 3.4324 * RSSI + 113.64
+            if pathlossmodel == "fastel":
+                calculated_dist = 0.0205 * math.pow(RSSI, 2) + 2.1511 * RSSI + 57.465
             if sender.static is False:
                 if sender.id not in self.known_dynamic_nodes:
                     self.known_dynamic_nodes[sender.id] = [True, calculated_dist, distance, sender.x, sender.y]
