@@ -11,11 +11,15 @@ class PathlossCalculator(object):
 
     def return_base_el1(self, x_a, y_a, x_b, y_b):
         distance = math.hypot(x_a - x_b, y_a - y_b)
+        if distance == 0:
+            distance = 1
         free_space_path_loss = -67.580939 + 10 * (-1.78691694) * math.log10(distance/5)
         return free_space_path_loss
 
     def return_shift_el2(self, x_a, y_a, x_b, y_b):
         distance = math.hypot(x_a - x_b, y_a - y_b)
+        if distance == 0:
+            distance = 1
         hash_val = hash((x_a, y_a, x_b, y_b)) % self.no_of_shifts
         base = -67.580939 + 10 * (-1.78691694) * math.log10(distance/5)
         if hash_val == 0:
