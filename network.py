@@ -14,7 +14,7 @@ class Network(object):
         if self.pathloss_model == "matrix_based":
             import pathloss_matrix
             self.obstacle_calc = pathloss_matrix.PathlossCalculator(self.x_size+2, self.y_size+2)
-        if self.pathloss_model == "fastel":
+        if self.pathloss_model == "fastel_dynamic":
             import pathloss_fastel
             self.pathloss_calc = pathloss_fastel.PathlossCalculator()
 
@@ -53,7 +53,9 @@ class Network(object):
                 pure_loss = -9.427 * math.log(distance) - 62.874 + random.normalvariate(0, 5)
                 obstacle_loss = self.obstacle_calc.return_obstacle_pathloss(math.floor(sender.x), math.floor(sender.y), math.floor(device.x), math.floor(device.y))
                 RSSI = pure_loss - obstacle_loss
-            if self.pathloss_model == "fastel":
+            if self.pathloss_model == "fastel_static":
+                RSSI = -67.580939 + 10 * (-1.78691694) * math.log10(distance/5)
+            if self.pathloss_model == "fastel_dynamic":
                 path_loss = self.pathloss_calc.return_pathloss(sender.x, sender.y, device.x, device.y)
                 RSSI = path_loss
             device.receive_ADV(sender, RSSI, distance, self.pathloss_model)
@@ -69,7 +71,9 @@ class Network(object):
                 pure_loss = -9.427 * math.log(distance) - 62.874 + random.normalvariate(0, 5)
                 obstacle_loss = self.obstacle_calc.return_obstacle_pathloss(math.floor(sender.x), math.floor(sender.y), math.floor(device.x), math.floor(device.y))
                 RSSI = pure_loss - obstacle_loss
-            if self.pathloss_model == "fastel":
+            if self.pathloss_model == "fastel_static":
+                RSSI = -67.580939 + 10 * (-1.78691694) * math.log10(distance/5)
+            if self.pathloss_model == "fastel_dynamic":
                 path_loss = self.pathloss_calc.return_pathloss(sender.x, sender.y, device.x, device.y)
                 RSSI = path_loss
             device.receive_ADV(sender, RSSI, distance, self.pathloss_model)

@@ -60,7 +60,7 @@ class Device(object):
         if RSSI > self.sensitivity:
             if pathlossmodel == "rssi_based":
                 calculated_dist = 0.0261 * math.pow(RSSI, 2) + 3.4324 * RSSI + 113.64
-            if pathlossmodel == "fastel":
+            if pathlossmodel == "fastel_static" or pathlossmodel == "fastel_dynamic":
                 calculated_dist = 0.0205 * math.pow(RSSI, 2) + 2.1511 * RSSI + 57.465
             if sender.static is False:
                 if sender.id not in self.known_dynamic_nodes:
