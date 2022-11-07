@@ -11,6 +11,7 @@ class Network(object):
         self.x_size = int(self.config["network_size_x"])
         self.y_size = int(self.config["network_size_y"])
         self.pathloss_model = pathloss_model
+        self.pathloss_disk_range = int(self.config["pathloss_disk_range"])
         if self.pathloss_model == "matrix_based":
             import pathloss_matrix
             self.obstacle_calc = pathloss_matrix.PathlossCalculator(self.x_size+2, self.y_size+2)
@@ -45,6 +46,9 @@ class Network(object):
             if device == sender:
                 continue
             distance = math.hypot(sender.x - device.x, sender.y - device.y)
+            if self.pathloss_disk_range > 0:
+                if distance > self.pathloss_disk_range:
+                    continue
             if distance < 1:
                 distance = 1
             if self.pathloss_model == "rssi_based":
@@ -63,6 +67,9 @@ class Network(object):
             if device == sender:
                 continue
             distance = math.hypot(sender.x - device.x, sender.y - device.y)
+            if self.pathloss_disk_range > 0:
+                if distance > self.pathloss_disk_range:
+                    continue
             if distance < 1:
                 distance = 1
             if self.pathloss_model == "rssi_based":

@@ -6,6 +6,7 @@ simulation_time = 300000
 network_size_x = 100
 network_size_y = 100
 pathloss_model = rssi_based
+pathloss_disk_range = -1    # value -1 means that this check will be ignored
 number_of_mobile_dev = 1
 number_of_static_dev = 0
 server_processing_capacity = 1
